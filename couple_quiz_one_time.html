@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>How Well Do You Know Me? ❤️</title>
+<style>
+*{box-sizing:border-box}
+body{
+ margin:0; min-height:100vh; font-family:Arial,sans-serif;
+ background:linear-gradient(135deg,#ff4d6d,#8e2de2);
+ display:flex; justify-content:center; align-items:center; color:#fff;
+ overflow-x:hidden;
+}
+.hearts{position:fixed;inset:0;pointer-events:none;overflow:hidden}
+.heart{position:absolute;bottom:-30px;font-size:22px;animation:float 7s linear infinite;opacity:.7}
+@keyframes float{to{transform:translateY(-110vh) rotate(360deg);opacity:0}}
+.card{
+ width:min(92%,520px); padding:28px 22px; border-radius:28px;
+ background:rgba(255,255,255,.14); backdrop-filter:blur(14px);
+ box-shadow:0 20px 60px rgba(0,0,0,.25); text-align:center;
+ border:1px solid rgba(255,255,255,.25)
+}
+h1{font-size:30px;margin:5px 0 8px}
+.subtitle{opacity:.9;margin-bottom:22px}
+input{
+ width:100%;padding:14px;border:0;border-radius:14px;margin:10px 0 15px;
+ font-size:16px;outline:none
+}
+button{
+ border:0;border-radius:14px;padding:14px 22px;font-size:16px;
+ font-weight:bold;cursor:pointer;background:#fff;color:#d6336c;
+ box-shadow:0 7px 18px rgba(0,0,0,.18)
+}
+button:active{transform:scale(.97)}
+.hidden{display:none}
+.progress{height:8px;background:rgba(255,255,255,.25);border-radius:20px;margin:15px 0 22px;overflow:hidden}
+.bar{height:100%;width:0;background:#fff;transition:.35s}
+.question{font-size:21px;font-weight:bold;margin:18px 0}
+.option{
+ display:block;width:100%;padding:14px;margin:10px 0;border-radius:15px;
+ background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.3);
+ cursor:pointer;text-align:left;transition:.2s
+}
+.option:hover{background:rgba(255,255,255,.22)}
+.option.selected{background:#fff;color:#d6336c;font-weight:bold}
+#next{margin-top:10px}
+.score{font-size:58px;font-weight:800;margin:10px}
+.message{font-size:19px;line-height:1.5;margin:15px 0 22px}
+.small{font-size:13px;opacity:.75;margin-top:18px}
+</style>
+</head>
+<body>
+<div class="hearts" id="hearts"></div>
+
+<div class="card">
+  <div id="start">
+    <div style="font-size:55px">💖</div>
+    <h1>How Well Do You Know Me?</h1>
+    <div class="subtitle">A little quiz made with ❤️ just for you</div>
+    <div style="display:inline-block;padding:8px 14px;border-radius:20px;background:rgba(255,255,255,.2);font-weight:bold;margin-bottom:10px">🔒 ONE TIME QUIZ • Only One Attempt</div>
+    <input id="name" placeholder="Enter your name 💕">
+    <button onclick="startQuiz()">Start Quiz ✨</button>
+    <div class="small">10 Questions • Choose carefully 😏</div>
+  </div>
+
+  <div id="quiz" class="hidden">
+    <div id="welcome"></div>
+    <div id="count"></div>
+    <div class="progress"><div class="bar" id="bar"></div></div>
+    <div class="question" id="question"></div>
+    <div id="options"></div>
+    <button id="next" onclick="nextQuestion()">Next ❤️</button>
+  </div>
+
+  <div id="result" class="hidden">
+    <div style="font-size:55px" id="resultEmoji">💖</div>
+    <h1>Quiz Complete!</h1>
+    <div class="score" id="score"></div>
+    <div class="message" id="message"></div>
+    <div class="small">🔒 This quiz can be attempted only once.</div>
+  </div>
+</div>
+
+<script>
+/* ==============================
+   CUSTOMIZE YOUR QUIZ HERE
+   Correct answers are 0=A, 1=B, 2=C, 3=D
+   ============================== */
+
+const questions = [
+ {q:"Mujhe sabse zyada kis baat par gussa aata hai? 😤",
+  o:["Ignore karne par","Jhoot bolne par","Bina bataye plan cancel karne par","Jab meri baat na suni jaye"], a:3},
+
+ {q:"Jab main sad hota hoon, mujhe kya chahiye hota hai? 🥺",
+  o:["Thoda space","Kisi se baat nahi karna","Aapka pyaar aur attention ❤️","So jaana"], a:2},
+
+ {q:"Mera dream destination kya hai? ✈️🌍",
+  o:["Goa","Manali","Paris","Uttarakhand 🏔️"], a:3},
+
+ {q:"Mujhe sabse zyada kis baat se hurt hota hai? 💔",
+  o:["Ignore hona","Jhoot sunna","Trust break hona","Tez awaaz me baat karna"], a:2},
+
+ {q:"Mera mood 5 minutes mein kis cheez se instantly better ho sakta hai? 🥰",
+  o:["Favourite food","Aapki call ❤️","Funny video","Compliment"], a:1},
+
+ {q:"Main upset hone par kya karta hoon? 😶",
+  o:["Chup ho jaata hoon","Bahut baat karta hoon","Gussa karta hoon","So jaata hoon"], a:0},
+
+ {q:"Mujhe sabse zyada kya pasand hai? ❤️",
+  o:["Long drive","Movies","Music","Aapke saath quality time 💕"], a:3},
+
+ {q:"Agar mujhe ek perfect date choose karni ho, toh main kya choose karunga? 🌹",
+  o:["Dinner date","Long drive","Movie + food","Beach/peaceful place"], a:2},
+
+ {q:"Relationship mein mere liye sabse important kya hai? 💕",
+  o:["Trust","Understanding","Loyalty","All of these ❤️"], a:3},
+
+ {q:"Agar aap mujhe ek surprise do, toh mujhe sabse zyada kya pasand aayega? 🎁",
+  o:["Letter/message ❤️","Gift","Date","Surprise visit"], a:3}
+];
+
+let current=0, score=0, selected=null, player="";
+
+function startQuiz(){
+ player=document.getElementById("name").value.trim() || "My Love";
+ document.getElementById("start").classList.add("hidden");
+ document.getElementById("quiz").classList.remove("hidden");
+ document.getElementById("welcome").innerHTML=`<b>Good luck, ${player}! 💕</b>`;
+ showQuestion();
+}
+function showQuestion(){
+ selected=null;
+ const x=questions[current];
+ document.getElementById("count").textContent=`Question ${current+1} of ${questions.length}`;
+ document.getElementById("bar").style.width=((current+1)/questions.length*100)+"%";
+ document.getElementById("question").textContent=x.q;
+ const box=document.getElementById("options"); box.innerHTML="";
+ x.o.forEach((opt,i)=>{
+   const d=document.createElement("div");
+   d.className="option";
+   d.textContent=String.fromCharCode(65+i)+". "+opt;
+   d.onclick=()=>selectOption(i,d);
+   box.appendChild(d);
+ });
+ document.getElementById("next").textContent=current===questions.length-1?"See My Score 💖":"Next ❤️";
+}
+function selectOption(i,el){
+ selected=i;
+ document.querySelectorAll(".option").forEach(x=>x.classList.remove("selected"));
+ el.classList.add("selected");
+}
+function nextQuestion(){
+ if(selected===null){alert("Pehle ek option select karo ❤️");return}
+ if(selected===questions[current].a) score++;
+ current++;
+ if(current<questions.length) showQuestion(); else finish();
+}
+function finish(){
+ document.getElementById("quiz").classList.add("hidden");
+ document.getElementById("result").classList.remove("hidden");
+ document.getElementById("score").textContent=`${score} / ${questions.length}`;
+ let msg,emo;
+ if(score===10){emo="💍💖";msg=`${player}, WOW! Aap mujhe almost mujhse bhi zyada jaante ho! 😭❤️ Perfect score! You really know me.`}
+ else if(score>=8){emo="🥰💖";msg=`${player}, that's amazing! Aap mujhe bahut achhe se jaante ho. ❤️ Bas thodi si aur practice! 😏`}
+ else if(score>=5){emo="💕";msg=`Not bad, ${player}! 😄 Aap mujhe jaante ho, lekin abhi aur secrets discover karne hain. ❤️`}
+ else{emo="😂💔";msg=`${player}, lagta hai mujhe aapko aur clues dene padenge! 😂❤️ Try again?`}
+ document.getElementById("resultEmoji").textContent=emo;
+ document.getElementById("message").textContent=msg;
+}
+if(localStorage.getItem("coupleQuizCompleted")==="yes"){
+  document.getElementById("start").innerHTML=`
+    <div style="font-size:55px">🔒❤️</div>
+    <h1>Quiz Already Completed</h1>
+    <div class="subtitle">This is a one-time quiz. You have already used your attempt. 💕</div>
+  `;
+}
+for(let i=0;i<18;i++){
+ const h=document.createElement("div");h.className="heart";h.textContent=["❤️","💗","💕","💖"][i%4];
+ h.style.left=Math.random()*100+"%";h.style.animationDelay=Math.random()*7+"s";
+ document.getElementById("hearts").appendChild(h);
+}
+</script>
+</body>
+</html>
